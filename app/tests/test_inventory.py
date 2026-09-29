@@ -3,7 +3,7 @@ import pytest
 # test: MSD426GXUST16-3 add second-hand independence tests
 def test_search_functionality():
     query = "Harry Potter"
-    assert query is not None
+    assert query is not None # 简单断言
     assert "Harry" in query
 
 # test: MSD426GXUST16-8 order status transition tests
