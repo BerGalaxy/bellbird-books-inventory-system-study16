@@ -15,3 +15,10 @@ A web-based inventory and customer order system for Bellbird Books, an independe
 
 ## How to Test
 Run `pytest` in the terminal.
+## How to Run
+1. Clone the repository
+2. Install dependencies: pip install -r requirements.txt
+3. Run the app: flask run
+
+## How to Test
+Run `pytest` in the terminal.
