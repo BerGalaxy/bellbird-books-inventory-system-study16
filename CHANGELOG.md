@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.0] - 2026-09-24
+### Added
+- Initial README
+- Project structure
+
 ## [0.2.0] - 2026-09-25
 ### Added
 - Flask application skeleton
@@ -11,7 +16,7 @@
 ### Removed
 - Temporary test_sample.py
 
-## [0.1.0] - 2026-09-24
+## [0.3.0] - 2026-09-29
 ### Added
-- Initial README
-- Project structure
+- Implemented search and filter logic (Story 5)
+- Added automated tests for inventory and order status (Story 3 & 8)
