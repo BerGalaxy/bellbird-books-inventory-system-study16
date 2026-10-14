@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Inventory &mdash; Bellbird Books{% endblock %}
+{% block content %}
+
+<form class="search-bar" method="GET" action="{{ url_for('main.search_page') }}">
+    <input type="text" name="q" placeholder="Search by title or author (partial match supported)...">
+    <button type="submit" class="btn gold">Search</button>
+</form>
+
+<h2>New Books (Quantity-based)</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Title</th><th>Author</th><th>ISBN</th>
+            <th>Qty</th><th>Price</th><th>Location</th><th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in new_books %}
+        <tr>
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.isbn or '—' }}</td>
+            <td>{{ book.quantity }}</td>
+            <td>${{ '%.2f'|format(book.price) }}</td>
+            <td>{{ book.location }}</td>
+            <td>
+                <form class="inline" method="POST" action="{{ url_for('main.sell_new_book', book_id=book.id) }}">
+                    <button class="btn" type="submit">Sell 1</button>
+                </form>
+                <form class="inline" method="POST" action="{{ url_for('main.restock_new_book', book_id=book.id) }}">
+                    <button class="btn gold" type="submit">Restock 1</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7">No new books recorded.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Second-hand Books (Individual Copies)</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Title</th><th>Author</th><th>Condition</th>
+            <th>Price</th><th>Location</th><th>Source</th><th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in sh_books %}
+        <tr>
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.condition }}</td>
+            <td>${{ '%.2f'|format(book.price) }}</td>
+            <td>{{ book.location }}</td>
+            <td>{{ book.source or '—' }}</td>
+            <td>
+                <form class="inline" method="POST" action="{{ url_for('main.sell_second_hand', book_id=book.id) }}">
+                    <button class="btn" type="submit">Sold</button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7">No second-hand books recorded.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
