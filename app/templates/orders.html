@@ -33,18 +33,24 @@
             <td>{{ order.arrived_date or '—' }}</td>
             <td>{{ order.picked_up_date or '—' }}</td>
             <td>
-                {% if order.status == 'Ordered' %}
-                <form class="inline" method="POST" action="{{ url_for('main.update_status', order_id=order.id) }}">
-                    <input type="hidden" name="status" value="Arrived">
-                    <button class="btn" type="submit">Mark Arrived</button>
-                </form>
-                {% elif order.status == 'Arrived' %}
-                <form class="inline" method="POST" action="{{ url_for('main.update_status', order_id=order.id) }}">
-                    <input type="hidden" name="status" value="Picked up">
-                    <button class="btn gold" type="submit">Mark Picked up</button>
-                </form>
+                {% if order.status in ['Picked up', 'Cancelled'] %}
+                    &mdash;
                 {% else %}
-                &mdash;
+                    {% if order.status == 'Ordered' %}
+                    <form class="inline" method="POST" action="{{ url_for('main.update_status', order_id=order.id) }}">
+                        <input type="hidden" name="status" value="Arrived">
+                        <button class="btn" type="submit">Mark Arrived</button>
+                    </form>
+                    {% elif order.status == 'Arrived' %}
+                    <form class="inline" method="POST" action="{{ url_for('main.update_status', order_id=order.id) }}">
+                        <input type="hidden" name="status" value="Picked up">
+                        <button class="btn gold" type="submit">Mark Picked up</button>
+                    </form>
+                    {% endif %}
+                    <a href="{{ url_for('main.edit_order_page', order_id=order.id) }}" class="btn">Edit</a>
+                    <form class="inline" method="POST" action="{{ url_for('main.cancel_order_page', order_id=order.id) }}">
+                        <button class="btn danger" type="submit">Cancel</button>
+                    </form>
                 {% endif %}
             </td>
         </tr>
