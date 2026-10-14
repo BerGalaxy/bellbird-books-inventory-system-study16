@@ -256,3 +256,30 @@ def search_orders(query):
     ''', (like, like)).fetchall()
     conn.close()
     return rows
+
+
+def get_order_by_id(order_id):
+    """Retrieve a single order by its ID."""
+    conn = get_db()
+    row = conn.execute('SELECT * FROM orders WHERE id = ?', (order_id,)).fetchone()
+    conn.close()
+    return row
+
+
+def update_order(order_id, book_title, author, quantity):
+    """Update an existing order's book title, author, and quantity."""
+    conn = get_db()
+    conn.execute(
+        'UPDATE orders SET book_title = ?, author = ?, quantity = ? WHERE id = ?',
+        (book_title, author, quantity, order_id)
+    )
+    conn.commit()
+    conn.close()
+
+
+def cancel_order(order_id):
+    """Cancel an order by setting its status to Cancelled."""
+    conn = get_db()
+    conn.execute("UPDATE orders SET status = 'Cancelled' WHERE id = ?", (order_id,))
+    conn.commit()
+    conn.close()

@@ -5,7 +5,8 @@ from app.models import (
     add_second_hand_book, get_all_second_hand_books, sell_second_hand_book, delete_second_hand_book,
     search_all_books,
     add_customer, get_customer_by_name,
-    create_order, get_all_orders, get_outstanding_orders, update_order_status, search_orders
+    create_order, get_all_orders, get_outstanding_orders, update_order_status, search_orders,
+    get_order_by_id, update_order, cancel_order
 )
 
 main = Blueprint('main', __name__)
@@ -43,7 +44,14 @@ def add_new_book_page():
             flash('Title, author, and location are required.', 'error')
             return redirect(url_for('main.add_new_book_page'))
 
-        add_new_book(title, author, isbn, int(quantity), float(price), location)
+        try:
+            quantity = int(quantity)
+            price = float(price)
+        except ValueError:
+            flash('Invalid number format for quantity or price.', 'error')
+            return redirect(url_for('main.add_new_book_page'))
+
+        add_new_book(title, author, isbn, quantity, price, location)
         flash(f'Added "{title}" to new book stock.', 'success')
         return redirect(url_for('main.index'))
 
@@ -65,7 +73,14 @@ def add_second_hand_book_page():
             flash('Title, author, and location are required.', 'error')
             return redirect(url_for('main.add_second_hand_book_page'))
 
-        add_second_hand_book(title, author, condition, float(price), location, source, float(paid))
+        try:
+            price = float(price)
+            paid = float(paid)
+        except ValueError:
+            flash('Invalid number format for price or paid amount.', 'error')
+            return redirect(url_for('main.add_second_hand_book_page'))
+
+        add_second_hand_book(title, author, condition, price, location, source, paid)
         flash(f'Added second-hand copy of "{title}" ({condition}).', 'success')
         return redirect(url_for('main.index'))
 
@@ -123,17 +138,61 @@ def new_order_page():
             flash('Customer name, contact, and book title are required.', 'error')
             return redirect(url_for('main.new_order_page'))
 
+        try:
+            quantity = int(quantity)
+        except ValueError:
+            flash('Quantity must be a valid number.', 'error')
+            return redirect(url_for('main.new_order_page'))
+
         customer = get_customer_by_name(customer_name)
         if customer is None:
             customer_id = add_customer(customer_name, contact, preference)
         else:
             customer_id = customer['id']
 
-        create_order(customer_id, book_title, author, int(quantity), str(date.today()))
+        create_order(customer_id, book_title, author, quantity, str(date.today()))
         flash(f'Order created for {customer_name}.', 'success')
         return redirect(url_for('main.orders_page'))
 
     return render_template('add_order.html')
+
+
+@main.route('/orders/<int:order_id>/edit', methods=['GET', 'POST'])
+def edit_order_page(order_id):
+    """Edit an existing customer order."""
+    order = get_order_by_id(order_id)
+    if order is None:
+        flash('Order not found.', 'error')
+        return redirect(url_for('main.orders_page'))
+
+    if request.method == 'POST':
+        book_title = request.form.get('book_title', '').strip()
+        author = request.form.get('author', '').strip()
+        quantity = request.form.get('quantity', '1')
+
+        if not book_title:
+            flash('Book title is required.', 'error')
+            return redirect(url_for('main.edit_order_page', order_id=order_id))
+
+        try:
+            quantity = int(quantity)
+        except ValueError:
+            flash('Quantity must be a valid number.', 'error')
+            return redirect(url_for('main.edit_order_page', order_id=order_id))
+
+        update_order(order_id, book_title, author, quantity)
+        flash('Order updated successfully.', 'success')
+        return redirect(url_for('main.orders_page'))
+
+    return render_template('edit_order.html', order=order)
+
+
+@main.route('/orders/<int:order_id>/cancel', methods=['POST'])
+def cancel_order_page(order_id):
+    """Cancel a customer order."""
+    cancel_order(order_id)
+    flash('Order cancelled.', 'success')
+    return redirect(url_for('main.orders_page'))
 
 
 @main.route('/orders/<int:order_id>/status', methods=['POST'])
