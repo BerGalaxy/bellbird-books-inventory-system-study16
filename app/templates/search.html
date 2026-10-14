@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Search &mdash; Bellbird Books{% endblock %}
+{% block content %}
+
+<h2>Search Results</h2>
+<p style="margin-bottom: 18px;">Query: <strong>{{ query }}</strong> &mdash; {{ results|length }} result(s)</p>
+
+<form class="search-bar" method="GET" action="{{ url_for('main.search_page') }}">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search again...">
+    <button type="submit" class="btn gold">Search</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Title</th><th>Author</th><th>Type</th>
+            <th>Condition / Qty</th><th>Price</th><th>Location</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in results %}
+        <tr>
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td><span class="badge {{ book.type }}">{{ book.type }}</span></td>
+            <td>
+                {% if book.type == 'new' %}
+                    {{ book.quantity }} copies
+                {% else %}
+                    {{ book.condition }}
+                {% endif %}
+            </td>
+            <td>${{ '%.2f'|format(book.price) }}</td>
+            <td>{{ book.location }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">No books matched your search.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

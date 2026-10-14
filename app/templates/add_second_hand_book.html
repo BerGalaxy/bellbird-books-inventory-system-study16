@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Add Second-hand Book{% endblock %}
+{% block content %}
+
+<h2>Add Second-hand Book</h2>
+<p style="margin-bottom: 14px; color: #666;">Each copy is recorded individually. Two copies of the same title can have different conditions and prices.</p>
+<div class="form-card">
+    <form method="POST">
+        <label>Title *</label>
+        <input type="text" name="title" required>
+
+        <label>Author *</label>
+        <input type="text" name="author" required>
+
+        <label>Condition</label>
+        <select name="condition">
+            <option>As New</option>
+            <option selected>Very Good</option>
+            <option>Good</option>
+            <option>Fair</option>
+            <option>Reading Copy</option>
+        </select>
+
+        <label>Price (AUD)</label>
+        <input type="number" step="0.01" name="price" value="0.00">
+
+        <label>Location *</label>
+        <input type="text" name="location" placeholder="e.g. BR-C3, BR-A1" required>
+
+        <label>Source (e.g. Petrakis clearance)</label>
+        <input type="text" name="source">
+
+        <label>Amount Paid (AUD)</label>
+        <input type="number" step="0.01" name="paid" value="0.00">
+
+        <button type="submit" class="btn gold">Add Copy</button>
+    </form>
+</div>
+
+{% endblock %}

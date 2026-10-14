@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Orders &mdash; Bellbird Books{% endblock %}
+{% block content %}
+
+<h2>Customer Orders</h2>
+
+<form class="search-bar" method="GET" action="{{ url_for('main.orders_page') }}">
+    <input type="text" name="q" value="{{ query or '' }}" placeholder="Search by customer name or book title...">
+    <button type="submit" class="btn gold">Search</button>
+    <a href="{{ url_for('main.orders_page') }}" class="btn">Show All</a>
+    <a href="{{ url_for('main.outstanding_orders_page') }}" class="btn">Outstanding Only</a>
+    <a href="{{ url_for('main.new_order_page') }}" class="btn gold">+ New Order</a>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>#</th><th>Customer</th><th>Contact</th>
+            <th>Book</th><th>Qty</th><th>Status</th>
+            <th>Ordered</th><th>Arrived</th><th>Picked up</th><th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.customer_name }}</td>
+            <td>{{ order.customer_contact }}</td>
+            <td>{{ order.book_title }}{% if order.author %} &mdash; {{ order.author }}{% endif %}</td>
+            <td>{{ order.quantity }}</td>
+            <td><span class="badge {{ order.status.replace(' ', '-') }}">{{ order.status }}</span></td>
+            <td>{{ order.ordered_date or '—' }}</td>
+            <td>{{ order.arrived_date or '—' }}</td>
+            <td>{{ order.picked_up_date or '—' }}</td>
+            <td>
+                {% if order.status == 'Ordered' %}
+                <form class="inline" method="POST" action="{{ url_for('main.update_status', order_id=order.id) }}">
+                    <input type="hidden" name="status" value="Arrived">
+                    <button class="btn" type="submit">Mark Arrived</button>
+                </form>
+                {% elif order.status == 'Arrived' %}
+                <form class="inline" method="POST" action="{{ url_for('main.update_status', order_id=order.id) }}">
+                    <input type="hidden" name="status" value="Picked up">
+                    <button class="btn gold" type="submit">Mark Picked up</button>
+                </form>
+                {% else %}
+                &mdash;
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="10">No orders found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
