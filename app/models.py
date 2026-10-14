@@ -217,7 +217,7 @@ def get_outstanding_orders():
         SELECT o.*, c.name AS customer_name, c.contact AS customer_contact
         FROM orders o
         JOIN customers c ON o.customer_id = c.id
-        WHERE o.status != 'Picked up'
+        WHERE o.status NOT IN ('Picked up', 'Cancelled')
         ORDER BY o.id DESC
     ''').fetchall()
     conn.close()

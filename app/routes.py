@@ -36,8 +36,8 @@ def add_new_book_page():
         title = request.form.get('title', '').strip()
         author = request.form.get('author', '').strip()
         isbn = request.form.get('isbn', '').strip()
-        quantity = request.form.get('quantity', '1')
-        price = request.form.get('price', '0')
+        quantity_str = request.form.get('quantity', '1')
+        price_str = request.form.get('price', '0')
         location = request.form.get('location', '').strip()
 
         if not title or not author or not location:
@@ -45,10 +45,18 @@ def add_new_book_page():
             return redirect(url_for('main.add_new_book_page'))
 
         try:
-            quantity = int(quantity)
-            price = float(price)
+            quantity = int(quantity_str)
+            price = float(price_str)
         except ValueError:
             flash('Invalid number format for quantity or price.', 'error')
+            return redirect(url_for('main.add_new_book_page'))
+
+        if quantity < 1:
+            flash('Quantity must be at least 1.', 'error')
+            return redirect(url_for('main.add_new_book_page'))
+
+        if price < 0:
+            flash('Price cannot be negative.', 'error')
             return redirect(url_for('main.add_new_book_page'))
 
         add_new_book(title, author, isbn, quantity, price, location)
@@ -64,20 +72,28 @@ def add_second_hand_book_page():
         title = request.form.get('title', '').strip()
         author = request.form.get('author', '').strip()
         condition = request.form.get('condition', 'Good')
-        price = request.form.get('price', '0')
+        price_str = request.form.get('price', '0')
         location = request.form.get('location', '').strip()
         source = request.form.get('source', '').strip()
-        paid = request.form.get('paid', '0')
+        paid_str = request.form.get('paid', '0')
 
         if not title or not author or not location:
             flash('Title, author, and location are required.', 'error')
             return redirect(url_for('main.add_second_hand_book_page'))
 
         try:
-            price = float(price)
-            paid = float(paid)
+            price = float(price_str)
+            paid = float(paid_str)
         except ValueError:
             flash('Invalid number format for price or paid amount.', 'error')
+            return redirect(url_for('main.add_second_hand_book_page'))
+
+        if price < 0:
+            flash('Price cannot be negative.', 'error')
+            return redirect(url_for('main.add_second_hand_book_page'))
+
+        if paid < 0:
+            flash('Paid amount cannot be negative.', 'error')
             return redirect(url_for('main.add_second_hand_book_page'))
 
         add_second_hand_book(title, author, condition, price, location, source, paid)
@@ -89,7 +105,20 @@ def add_second_hand_book_page():
 
 @main.route('/books/new/<int:book_id>/sell', methods=['POST'])
 def sell_new_book(book_id):
-    """Decrease quantity by 1 when a new book is sold."""
+    """Decrease quantity by 1 when a new book is sold. Prevent negative quantity."""
+    from app.models import get_db
+    conn = get_db()
+    book = conn.execute('SELECT quantity FROM new_books WHERE id = ?', (book_id,)).fetchone()
+    conn.close()
+
+    if book is None:
+        flash('Book not found.', 'error')
+        return redirect(url_for('main.index'))
+
+    if book['quantity'] <= 0:
+        flash('Cannot sell: quantity is already 0.', 'error')
+        return redirect(url_for('main.index'))
+
     update_new_book_quantity(book_id, -1)
     flash('Quantity decreased by 1.', 'success')
     return redirect(url_for('main.index'))
@@ -132,16 +161,20 @@ def new_order_page():
         preference = request.form.get('preference', 'call')
         book_title = request.form.get('book_title', '').strip()
         author = request.form.get('author', '').strip()
-        quantity = request.form.get('quantity', '1')
+        quantity_str = request.form.get('quantity', '1')
 
         if not customer_name or not contact or not book_title:
             flash('Customer name, contact, and book title are required.', 'error')
             return redirect(url_for('main.new_order_page'))
 
         try:
-            quantity = int(quantity)
+            quantity = int(quantity_str)
         except ValueError:
             flash('Quantity must be a valid number.', 'error')
+            return redirect(url_for('main.new_order_page'))
+
+        if quantity < 1:
+            flash('Quantity must be at least 1.', 'error')
             return redirect(url_for('main.new_order_page'))
 
         customer = get_customer_by_name(customer_name)
@@ -168,16 +201,20 @@ def edit_order_page(order_id):
     if request.method == 'POST':
         book_title = request.form.get('book_title', '').strip()
         author = request.form.get('author', '').strip()
-        quantity = request.form.get('quantity', '1')
+        quantity_str = request.form.get('quantity', '1')
 
         if not book_title:
             flash('Book title is required.', 'error')
             return redirect(url_for('main.edit_order_page', order_id=order_id))
 
         try:
-            quantity = int(quantity)
+            quantity = int(quantity_str)
         except ValueError:
             flash('Quantity must be a valid number.', 'error')
+            return redirect(url_for('main.edit_order_page', order_id=order_id))
+
+        if quantity < 1:
+            flash('Quantity must be at least 1.', 'error')
             return redirect(url_for('main.edit_order_page', order_id=order_id))
 
         update_order(order_id, book_title, author, quantity)
